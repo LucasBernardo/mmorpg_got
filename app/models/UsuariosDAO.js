@@ -1,3 +1,5 @@
+var crypto = require("crypto");
+
 function UsuariosDAO(connection){
 	this._connection = connection();
 }
@@ -5,6 +7,10 @@ function UsuariosDAO(connection){
 UsuariosDAO.prototype.inserirUsuario = function(usuario){
 	this._connection.open( function(err, mongoclient){
 		mongoclient.collection("usuarios", function(err, collection){
+			
+			var senha_criptografada = crypto.createHash("md5").update(usuario.senha).digest("hex");
+			usuario.senha = senha_criptografada;
+
 			collection.insert(usuario);
 
 			mongoclient.close();
@@ -15,6 +21,10 @@ UsuariosDAO.prototype.inserirUsuario = function(usuario){
 UsuariosDAO.prototype.autenticar = function(usuario, req, res){
 	this._connection.open( function(err, mongoclient){
 		mongoclient.collection("usuarios", function(err, collection){
+			
+			var senha_criptografada = crypto.createHash("md5").update(usuario.senha).digest("hex");
+			usuario.senha = senha_criptografada;
+			
 			collection.find(usuario).toArray(function(err, result){
 				
 				//Mensagem para quando o usuário informar um login e/ou senha errados
